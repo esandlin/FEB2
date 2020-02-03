@@ -1,0 +1,32 @@
+{
+    "Come Monday":
+    {"title":"Come Monday",
+     "author":"Jimmy Buffett",
+     "album":"Greatest Hits",
+     "fileName":"ComeMonday.mp3"},
+    "Fins":
+    {"title":"Fins",
+     "author":"Jimmy Buffett",
+     "album":"Greatest Hits",
+     "fileName":"Fins.mp3"},
+    "Bye Bye Love":
+    {"title":"Bye Bye Love",
+     "author":"Everly Brothers",
+     "album":"Best of Everly Brothers",
+     "fileName":"ByeByeLove.mp3"},
+    "Crazy":
+    {"title":"Crazy",
+     "author":"Patsy Cline",
+     "album":"Best of Patsy Cline",
+     "fileName":"Crazy.mp3"},
+    "Oh Pretty Woman":
+    {"title":"Oh Pretty Woman",
+     "author":"Roy Orbison",
+     "album":"Best of Roy",
+     "fileName":"OhPrettyWoman.mp3"},
+    "Only The Lonely":
+    {"title":"Only The Lonely",
+     "author":"Roy Orbison",
+     "album":"Best of Roy",
+     "fileName":"OnlyTheLonely.mp3"}
+}

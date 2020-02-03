@@ -1,0 +1,182 @@
+<project name="Ser321 Spring 2019 Assign2" default="targets" basedir=".">
+
+   <!-- define tasks used in the prepare task for platform identification -->
+   <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+   <!-- set global properties for this build -->
+   <property name="src" value="./src" />
+   <property name="build" value="./classes" />
+   <property name="docs" value="./docs" />
+   <property name="lib" value="./lib" />
+	
+   <property name="userId" value="first.lastname" />
+   <property name="lastfmkey" value="your-lastfm-api-key" />
+   <property name="hostId" value="localhost" />
+   <property name="regPort" value="1099" />
+	
+   <property name="parentDir" value="${user.dir}${file.separator}" />
+   <property name="javafxhome" value="javafx-sdk-13.0.1/"/>
+   <property name="javafx-lib-home" value="${javafxhome}lib"/>
+
+   <path id="compile.classpath">
+      <pathelement location="${build}"/>
+      <fileset dir="${lib}">
+         <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${basedir}/${javafx-lib-home}">
+         <include name="javafx.graphics.jar"/>
+         <include name="javafx.base.jar"/>
+         <include name="javafx.media.jar"/>
+         <include name="javafx.swing.jar"/>
+         <include name="javafx.controls.jar"/>
+         <include name="javafx.web.jar"/>
+         <include name="javafx.swt.jar"/>
+         <include name="javafx.fxml.jar"/>
+         <include name="javafx.controls.jar"/>
+      </fileset>
+   </path>
+	
+	<target name="checkos">
+		<condition property="os" value="windows">
+			<os family="windows" />
+		</condition>
+		<condition property="os" value="unix">
+			<os family="unix" />
+		</condition>
+		<condition property="os" value="mac">
+			<os family="mac" />
+		</condition>
+	   </target>
+
+   <target name="targets" depends="checkos">
+   	  <echo message="targets are: targets, clean, prepare, build, server, client"/>
+   	  <echo message="java home is: ${java.home}"/>
+      <echo message="os family is: ${os}"/>
+      <echo>
+          start server with: ant server -DhostId=192.168.0.41 -DregPort=1099
+      </echo>
+      <echo>
+          start client with: ant client -DhostId=192.168.0.41 -DregPort=1099
+      </echo>
+   </target>
+
+   <target name="prepare">
+      <!-- Create the time stamp -->
+      <tstamp/>
+      <!-- Create the build directory structure used by compile -->
+      <echo message="home defined as: ${home}" />
+      <mkdir dir="${build}" />
+      <!-- Platform identification -->
+      <condition property="build.host.islinux">
+        <and>
+          <os family="unix" />
+          <not>
+            <contains string="${os.name}" substring="mac"
+                      casesensitive="false" />
+          </not>
+        </and>
+      </condition>
+      <condition property="build.host.platform" value="linux">
+        <isset property="build.host.islinux" />
+      </condition>
+
+      <condition property="build.host.ismac">
+        <and>
+          <os family="unix" />
+          <contains string="${os.name}" substring="mac" casesensitive="false"/>
+        </and>
+      </condition>
+      <condition property="build.host.platform" value="mac">
+        <isset property="build.host.ismac" />
+      </condition>
+
+      <fail unless="build.host.platform"
+            message="Building on ${os.name} is not supported" />
+      <echo message="build.host.platform is: ${build.host.platform}"/>
+   </target>
+
+   <target name="setup.javafx"
+           depends="prepare">
+     <if>
+       <isset property="build.host.ismac"/>
+         <then>
+           <echo message="detected property ismac is set"/>
+           <unzip src="${basedir}/openjfx-13.0.1_osx-x64_bin-sdk.zip" dest="${basedir}"/>
+         </then>
+     <elseif>
+         <isset property="build.host.islinux"/>
+         <then>
+            <echo message="detected property islinux is set"/>
+            <unzip src="${basedir}/openjfx-13.0.1_linux-x64_bin-sdk.zip" dest="${basedir}"/>
+         </then>
+     </elseif>
+     <else>
+         <echo message="failed to detect a host I know how to build on"/>
+     </else>
+     </if>
+   </target>
+
+   <target name="build" depends="setup.javafx"
+           description="Compile Java sources">
+      <javac srcdir="${src}"
+             includeantruntime="false"
+             destdir="${build}">
+         <classpath refid="compile.classpath"/>
+      </javac>
+   </target>
+
+	<!--  
+	<target name="execute" depends="build"
+           description="execute the client">
+      <java classname="ser321.assign3.esandlin.client.MediaLibraryApp"
+            fork="yes">
+         <arg value="${userId}"/> 
+         <arg value="${lastfmkey}"/> 
+         <classpath refid="compile.classpath"/>
+         <jvmarg value="-Djava.library.path=${javafx-lib-home}"/>
+      </java>
+   </target>
+	-->
+	
+	<target name="client" depends="build"
+	           description="Start client">
+         <echo message="user.dir is: ${user.dir}"/>
+	     <echo message="command line client: java -cp classes -Djava.security.policy=policyClient RMIClient ${hostId} ${regPort}" />
+	     <java classname="ser321.assign3.esandlin.client.MediaLibraryApp"
+		            fork="yes">
+         <arg value="${userId}"/> 
+         <arg value="${lastfmkey}"/> 
+	     <classpath refid="compile.classpath"/>
+	<!--           <sysproperty key="java.security.policy" value="policyClient"/> -->
+	     <jvmarg value="-Djava.library.path=${javafx-lib-home}"/>
+         <arg value="${hostId}"/> 
+         <arg value="${regPort}"/>
+	     </java>
+	</target>
+
+	   <target name="server" depends="build"
+	           description="Using parallel task, start server and client">
+	     <parallel>
+	       <exec dir="${basedir}"
+	             executable="rmiregistry">
+	         <arg value="${regPort}"/>
+	         <env key="CLASSPATH" path="${basedir}/${build}"/>
+	       </exec>
+	       <sequential>
+	         <sleep seconds="10"/>
+	         <java classname="ser321.assign3.esandlin.server.MediaLibraryApp" fork="yes">
+	<!--           <sysproperty key="java.security.policy" value="policyServer"/> -->
+	           <sysproperty key="java.rmi.server.hostname" value="${hostId}"/>
+	           <arg value="${hostId}"/> 
+	           <arg value="${regPort}"/> 
+	           <classpath refid="compile.classpath"/>
+	         </java>
+	       </sequential>
+	     </parallel>
+	   </target>
+
+   <target name="clean">
+     <!-- Delete the ${build} and ${docs} directory trees -->
+     <delete dir="${build}" />
+     <delete dir="${javafxhome}"/>
+   </target>
+</project>
