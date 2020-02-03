@@ -52,10 +52,11 @@
    	  <echo message="java home is: ${java.home}"/>
       <echo message="os family is: ${os}"/>
       <echo>
-          start server with: ant server -DhostId=192.168.0.41 -DregPort=1099
+          start server with: ant server -DhostId=localhost -DregPort=1099
       </echo>
       <echo>
-          start client with: ant client -DhostId=192.168.0.41 -DregPort=1099
+          start client with: ant client -DhostId=localhost -DregPort=1099 -Dlastfmkey=MyLastFMKey
+           <!-- ant client -DhostId=192.168.0.41 -DregPort=1099 -->
       </echo>
    </target>
 
@@ -163,7 +164,7 @@
 	       </exec>
 	       <sequential>
 	         <sleep seconds="10"/>
-	         <java classname="ser321.assign3.esandlin.server.MediaLibraryApp" fork="yes">
+	         <java classname="ser321.assign3.esandlin.server.MediaLibraryImpl" fork="yes">
 	<!--           <sysproperty key="java.security.policy" value="policyServer"/> -->
 	           <sysproperty key="java.rmi.server.hostname" value="${hostId}"/>
 	           <arg value="${hostId}"/> 
